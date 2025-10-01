@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">MotorMonitor</string>
+    <string name="motor_icon_desc">Icono de un motor</string>
+    <string name="motor_dc_control">Control de Motor DC</string>
+    <string name="bluetooth_monitoring">Monitoreo por Bluetooth</string>
+    <string name="encender">ENCENDER</string>
+    <string name="apagar">APAGAR</string>
+    <string name="medicion_de_voltaje">Medición de Voltaje</string>
+    <string name="medicion_de_corriente">Medición de Corriente</string>
+    <string name="medicion_de_velocidad">Medición de Velocidad</string>
+</resources>
