@@ -8,4 +8,5 @@
     <string name="medicion_de_voltaje">Medición de Voltaje</string>
     <string name="medicion_de_corriente">Medición de Corriente</string>
     <string name="medicion_de_velocidad">Medición de Velocidad</string>
+    <string name="medicion_ciclo_trabajo">Ciclo de Trabajo</string>
 </resources>

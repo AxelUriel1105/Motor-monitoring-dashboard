@@ -32,10 +32,12 @@ class MainActivity : AppCompatActivity() {
     // --- Variables de la Interfaz Gráfica (UI) ---
     private lateinit var textViewVoltage: TextView
     private lateinit var textViewCurrent: TextView
-    private lateinit var textViewSpeed: TextView // ¡NUEVO! para velocidad
+    private lateinit var textViewSpeed: TextView
+    private lateinit var textViewDutyCycle: TextView // ¡NUEVO!
     private lateinit var chartVoltage: LineChart
     private lateinit var chartCurrent: LineChart
-    private lateinit var chartSpeed: LineChart // ¡NUEVO! para velocidad
+    private lateinit var chartSpeed: LineChart
+    private lateinit var chartDutyCycle: LineChart // ¡NUEVO!
     private lateinit var buttonOn: Button
     private lateinit var buttonOff: Button
     private var time = 0f
@@ -59,17 +61,20 @@ class MainActivity : AppCompatActivity() {
         // Inicializa todos los componentes de la interfaz
         textViewVoltage = findViewById(R.id.textViewVoltage)
         textViewCurrent = findViewById(R.id.textViewCurrent)
-        textViewSpeed = findViewById(R.id.textViewSpeed) // ¡NUEVO!
+        textViewSpeed = findViewById(R.id.textViewSpeed)
+        textViewDutyCycle = findViewById(R.id.textViewDutyCycle) // ¡NUEVO!
         chartVoltage = findViewById(R.id.chartVoltage)
         chartCurrent = findViewById(R.id.chartCurrent)
-        chartSpeed = findViewById(R.id.chartSpeed) // ¡NUEVO!
+        chartSpeed = findViewById(R.id.chartSpeed)
+        chartDutyCycle = findViewById(R.id.chartDutyCycle) // ¡NUEVO!
         buttonOn = findViewById(R.id.buttonOn)
         buttonOff = findViewById(R.id.buttonOff)
 
         // Configura el estilo y las propiedades de las gráficas
         setupChart(chartVoltage, "Voltaje", ContextCompat.getColor(this, R.color.teal_200))
         setupChart(chartCurrent, "Corriente", ContextCompat.getColor(this, R.color.light_blue_400))
-        setupChart(chartSpeed, "Velocidad", ContextCompat.getColor(this, R.color.amber_400)) // ¡NUEVO!
+        setupChart(chartSpeed, "Velocidad", ContextCompat.getColor(this, R.color.amber_400))
+        setupChart(chartDutyCycle, "Ciclo de Trabajo", ContextCompat.getColor(this, R.color.pink_400)) // ¡NUEVO!
 
         // Asigna las acciones a los botones
         setupButtonListeners()
@@ -81,14 +86,15 @@ class MainActivity : AppCompatActivity() {
     // ¡MODIFICADO! - Procesa la nueva cadena de texto del Arduino
     private fun processData(data: String) {
         Log.d("BluetoothData", "Recibido: $data")
-        // El formato esperado es "voltaje,corriente,rpm", por ejemplo "12.34,1.56,3000"
+        // El formato esperado es "voltaje,corriente,rpm,dutycycle", por ejemplo "12.34,1.56,3000,75"
         try {
             val parts = data.split(',')
-            // Verifica que hemos recibido exactamente 3 partes
-            if (parts.size == 3) {
+            // Verifica que hemos recibido exactamente 4 partes
+            if (parts.size == 4) {
                 val newVoltage = parts[0].toFloat()
                 val newCurrent = parts[1].toFloat()
                 val newSpeed = parts[2].toFloat()
+                val newDutyCycle = parts[3].toFloat() // ¡NUEVO!
 
                 // Actualiza la interfaz de usuario en el hilo principal
                 runOnUiThread {
@@ -96,50 +102,46 @@ class MainActivity : AppCompatActivity() {
                     textViewVoltage.text = String.format("%.2f V", newVoltage)
                     textViewCurrent.text = String.format("%.2f A", newCurrent)
                     textViewSpeed.text = String.format("%.0f RPM", newSpeed)
+                    textViewDutyCycle.text = String.format("%.0f %%", newDutyCycle) // ¡NUEVO!
 
-                    // Añade los datos a las tres gráficas
+                    // Añade los datos a las cuatro gráficas
                     addEntry(chartVoltage, newVoltage, "Voltaje", ContextCompat.getColor(this, R.color.teal_200))
                     addEntry(chartCurrent, newCurrent, "Corriente", ContextCompat.getColor(this, R.color.light_blue_400))
                     addEntry(chartSpeed, newSpeed, "Velocidad", ContextCompat.getColor(this, R.color.amber_400))
+                    addEntry(chartDutyCycle, newDutyCycle, "Ciclo de Trabajo", ContextCompat.getColor(this, R.color.pink_400)) // ¡NUEVO!
 
-                    time += 0.5f // Asumimos un intervalo de 500ms
+                    time += 0.5f
                 }
             } else {
-                Log.w("DataParsingWarning", "Formato de datos incorrecto: '$data'")
+                Log.w("DataParsingWarning", "Formato de datos incorrecto (se esperaban 4 partes): '$data'")
             }
         } catch (e: Exception) {
             Log.e("DataParsingError", "No se pudo procesar: '$data'", e)
         }
     }
 
-    // ¡MODIFICADO! - Configura los nuevos comandos para los botones
+    // Configura los comandos para los botones
     private fun setupButtonListeners() {
         buttonOn.setOnClickListener {
-            sendData("ON\n") // Envía "ON" con salto de línea
+            sendData("ON\n")
             Toast.makeText(this, "Comando: ENCENDER", Toast.LENGTH_SHORT).show()
         }
 
         buttonOff.setOnClickListener {
-            sendData("OFF\n") // Envía "OFF" con salto de línea
+            sendData("OFF\n")
             Toast.makeText(this, "Comando: APAGAR", Toast.LENGTH_SHORT).show()
         }
     }
 
     // --- EL RESTO DEL CÓDIGO PERMANECE IGUAL ---
 
-    // Función principal para configurar el Bluetooth
     private fun setupBluetooth() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        if (bluetoothAdapter == null) {
-            Toast.makeText(this, "Bluetooth no disponible", Toast.LENGTH_LONG).show()
-            return
-        }
+        if (bluetoothAdapter == null) { Toast.makeText(this, "Bluetooth no disponible", Toast.LENGTH_LONG).show(); return }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 101)
-            return
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 101); return
         }
-        val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
-        val targetDevice = pairedDevices?.find { it.name == DEVICE_NAME }
+        val targetDevice = bluetoothAdapter?.bondedDevices?.find { it.name == DEVICE_NAME }
         if (targetDevice != null) {
             Toast.makeText(this, "Dispositivo '$DEVICE_NAME' encontrado. Conectando...", Toast.LENGTH_SHORT).show()
             connectToDevice(targetDevice)
@@ -180,9 +182,7 @@ class MainActivity : AppCompatActivity() {
                         while (endOfLineIndex > -1) {
                             val fullMessage = stringBuilder.substring(0, endOfLineIndex).trim()
                             stringBuilder.delete(0, endOfLineIndex + 1)
-                            if (fullMessage.isNotEmpty()) {
-                                processData(fullMessage)
-                            }
+                            if (fullMessage.isNotEmpty()) { processData(fullMessage) }
                             endOfLineIndex = stringBuilder.indexOf("\n")
                         }
                     }
@@ -195,9 +195,7 @@ class MainActivity : AppCompatActivity() {
         if (bluetoothSocket?.isConnected == true) {
             try { outputStream?.write(message.toByteArray()) }
             catch (e: IOException) { e.printStackTrace(); Toast.makeText(this, "Error al enviar", Toast.LENGTH_SHORT).show() }
-        } else {
-            Toast.makeText(this, "No conectado", Toast.LENGTH_SHORT).show()
-        }
+        } else { Toast.makeText(this, "No conectado", Toast.LENGTH_SHORT).show() }
     }
 
     private fun closeConnection() {

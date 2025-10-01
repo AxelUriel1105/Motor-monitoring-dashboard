@@ -14,7 +14,7 @@
         android:padding="24dp"
         tools:context=".MainActivity">
 
-        <!-- Panel de Control (Sin cambios) -->
+        <!-- Panel de Control -->
         <androidx.cardview.widget.CardView
             android:layout_width="300dp"
             android:layout_height="match_parent"
@@ -81,11 +81,10 @@
                     android:textColor="#FFFFFF"
                     android:textSize="16sp"
                     app:cornerRadius="15dp" />
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Panel de Voltaje (Sin cambios) -->
+        <!-- Panel de Voltaje -->
         <androidx.cardview.widget.CardView
             android:layout_width="450dp"
             android:layout_height="match_parent"
@@ -124,11 +123,10 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:layout_marginTop="16dp"/>
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Panel de Corriente (Sin cambios) -->
+        <!-- Panel de Corriente -->
         <androidx.cardview.widget.CardView
             android:layout_width="450dp"
             android:layout_height="match_parent"
@@ -170,10 +168,11 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- ¡NUEVO! Panel de Velocidad -->
+        <!-- Panel de Velocidad -->
         <androidx.cardview.widget.CardView
             android:layout_width="450dp"
             android:layout_height="match_parent"
+            android:layout_marginEnd="16dp"
             app:cardBackgroundColor="#1E1E1E"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp">
@@ -211,5 +210,47 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- ¡NUEVO! Panel de Ciclo de Trabajo -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="450dp"
+            android:layout_height="match_parent"
+            app:cardBackgroundColor="#1E1E1E"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/medicion_ciclo_trabajo"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/textViewDutyCycle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="0 %"
+                    android:textColor="@color/pink_400"
+                    android:textSize="34sp"
+                    android:textStyle="bold" />
+
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/chartDutyCycle"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginTop="16dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
     </LinearLayout>
 </HorizontalScrollView>
+
